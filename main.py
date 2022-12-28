@@ -118,7 +118,7 @@ k_buton_dr=0
 DELAY=300 #delay pt a nu se inregistra clickuri care daca ar fi apasate asa des, s ar suprapune masinile
 #variabile pt a retine nr de masini de pe fiecare sens ca sa calculez unde sa se opreasca fiecare daca e rosu
 #astfel incat sa nu se suprapuna
-nrCars_jos=0  #nr cars e nr de masini si index ul (dar indexam de la 1)
+nrCars_jos=0  #nr cars e nr de masini si index ul (dar indexam de la 1) nrcarsjos e cate masini pleaca de jos
 nrCars_sus=0
 nrCars_stg=0
 nrCars_dr=0
@@ -127,44 +127,40 @@ def handleClick(k, pos):
     global k_buton_sus, k_buton_jos, k_buton_stg, k_buton_dr # sa modific var globala, nu locala
     global nrCars_jos, nrCars_sus, nrCars_stg, nrCars_dr
     print ("click at " , pos )
-    if isInside(pos, width- 75, height/2 -road_width-25, 50, 50 ): #dr
+    if isInside(pos, width- 75, height/2 -road_width-25, 50, 50 ): # butonul din dr
         if (k-k_buton_dr)>DELAY:
             k_buton_dr=k
             nrCars_dr += 1
             caraux = Car("masina-removebg-preview.png", coordRIGHT, "left", nrCars_dr)
             carList.append(caraux)
             carListAux.append(caraux)
-
-    elif isInside(pos,25, height / 2 + road_width-25, 50,50): #stg
+    elif isInside(pos,25, height / 2 + road_width-25, 50,50): #butonul din stg
         if(k-k_buton_stg)>DELAY:
             k_buton_stg=k
             nrCars_stg += 1
             caraux = Car("masina-removebg-preview.png", coordLEFT, "right", nrCars_stg)
             carList.append(caraux)
             carListAux.append(caraux)
-            #nrCars_stg+=1
-    elif isInside(pos,width/2 + road_width-25, height - 75, 50, 50): #sus
+    elif isInside(pos,width/2 + road_width-25, height - 75, 50, 50): #butonul de jos
         if(k-k_buton_sus)>DELAY:
             k_buton_sus=k
-            nrCars_sus += 1
-            caraux = Car("masina-removebg-preview.png", coordDOWN, "up", nrCars_sus)
+            nrCars_jos += 1
+            caraux = Car("masina-removebg-preview.png", coordDOWN, "up", nrCars_jos)
             carList.append(caraux)
             carListAux.append(caraux)
-            #nrCars_sus+=1
-    elif isInside(pos,width/2- road_width-25, 25,50,50): #jos
+    elif isInside(pos,width/2- road_width-25, 25,50,50): #butonul de sus
         if(k-k_buton_jos)>DELAY:
             k_buton_jos=k
-            nrCars_jos += 1
-            caraux = Car("masina-removebg-preview.png", coordUP, "down", nrCars_jos)
+            nrCars_sus += 1
+            caraux = Car("masina-removebg-preview.png", coordUP, "down", nrCars_sus)
             carList.append(caraux)
             carListAux.append(caraux)
-            #nrCars_jos+=1
 
 #scoatem masina daca a trecut de mijloc plus 50 px crd
 def passed(c):
     return c.hasPassed()
 
-# pt iecare directie de mers verificam sa fie inainte de inceputul intersectiei pt a adauga acea masina in coada acelei directii si comparam lungimea cozilor si
+# pt fiecare directie de mers verificam sa fie inainte de inceputul intersectiei pt a adauga acea masina in coada acelei directii si comparam lungimea cozilor si
 # punem verde la cea mai lunga coada si rosu la cealalta
 #actually cred ca ar trb sa luam in calcul si partea opusa de drum pt ca verde e pt ambele parti
 #daca este o coada mai mica, care ar trece prin intersectie inainte ca marea coada sa ajunga la intersectie, ii afisam acesteia verde (finalul cozii mici sa mai aproape de trecerea intersectiei
@@ -190,23 +186,45 @@ def controlSemafoare():
         sem_jos.setColor("red")
 
 
-# def manageCar(c):
-#      if c.direction == "up" and c.car_loc[1]>0:
-#
+def manageCar(c):  #if c has passed manage it
+    global nrCars_jos, nrCars_sus, nrCars_stg, nrCars_dr
+    if c.direction == "up":
+          nrCars_jos -= 1
+    elif c.direction == "down":
+          nrCars_sus -= 1
+    elif c.direction == "left":
+          nrCars_dr -= 1
+    else:
+          nrCars_stg -= 1
+    carList.remove(c)
+
+
+
+
 
 k=0
 while running:
     #animatie vehicul
     controlSemafoare()
+    if(k%1000==0):
+        print("nrCars_jos: ", nrCars_jos, "nrCars_sus: ", nrCars_sus, "nrCars_stg: ", nrCars_stg, "nrCars_dr: ", nrCars_dr)
+
     k+=1
     if k%8==0:
 
-        for c in carList:
+        for c in carListAux:
             c.move(c.direction, sem_dr.getColor(), sem_stg.getColor(), sem_sus.getColor(), sem_jos.getColor(),
-                   nrCars_dr, nrCars_stg, nrCars_sus, nrCars_jos)
+                   nrCars_dr, nrCars_stg, nrCars_sus, nrCars_jos, passed(c))
             #daca a trecut de mijloc + latura patratului din mijloc, scoatem din lista
-            #if(passed(c)): carList.remove(c)
-            #manageCar(c)
+            # if(passed(c)):
+            #     print("car with index ", c.index, " has passed")
+            #     #carList.remove(c)
+            #     manageCar(c)
+        for c in carList:  # acest loop e necesar pt ca dupa ce dau remove din carList, in carlistaux tot ramane masina deci da crash cand dau remove
+            if(passed(c)):
+                print("car with index ", c.index, " has passed")
+                manageCar(c)
+
 
     for event in pygame.event.get(): # in pygame.event se afla toate evenimentele din app
         if event.type == QUIT:  #event listener pt quit (apasare pe X)

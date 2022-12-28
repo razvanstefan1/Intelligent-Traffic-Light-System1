@@ -15,14 +15,14 @@ class Car:
         screen.blit(self.img, self.car_loc)
 
     #move doar daca nu e masina in fata sau nu e rosu in fata
-    def move(self, direction, culoare_dr,culoare_st,culoare_sus,culoare_jos,nrDr,nrSt,nrSus,nrJos):
-        if direction == "up" and (culoare_jos != "red" or self.car_loc[1] > 400 + 38 * self.index ): #38 e lungimea masinii si nrjos e indexul masinii dintre cele de jos
+    def move(self, direction, culoare_dr,culoare_st,culoare_sus,culoare_jos,nrDr,nrSt,nrSus,nrJos, passed):
+        if direction == "up" and (culoare_jos != "red" or self.car_loc[1] > 400 + 38 * self.index or passed == True ): #38 e lungimea masinii si nrjos e indexul masinii dintre cele de jos
             self.car_loc[1] -= 1
-        elif direction == "down" and (culoare_sus != "red" or self.car_loc[1] < 400  - 38 * self.index):  #initial era 400-76 dar am modificat
+        elif direction == "down" and (culoare_sus != "red" or self.car_loc[1] < 362  - 38 * self.index or passed == True):  #initial era 400-76 dar am modificat
             self.car_loc[1] += 1
-        elif direction == "right" and (culoare_st != "red" or self.car_loc[0] < 800 - 38 - 38 * self.index):
+        elif direction == "right" and (culoare_st != "red" or self.car_loc[0] < 800 - 38 - 38 * self.index or passed == True):
             self.car_loc[0] += 1
-        elif direction == "left" and (culoare_dr != "red" or self.car_loc[0] > 800 + 38 * self.index):
+        elif direction == "left" and (culoare_dr != "red" or self.car_loc[0] > 800 + 38 * self.index or passed == True):
             self.car_loc[0] -= 1
 
     def hasPassed(self):
