@@ -120,10 +120,10 @@ nrCars_dr=0
 
 
 ###############################CAR QUEUE
-QJos = CarQueue(0,"Down", 0, None)
-QSus = CarQueue(0,"Up", 0, None)
-QStg = CarQueue(0,"Left", 0, None)
-QDr = CarQueue(0,"Right", 0, None)
+QJos = CarQueue(0,"Down", 0)
+QSus = CarQueue(0,"Up", 0)
+QStg = CarQueue(0,"Left", 0)
+QDr = CarQueue(0,"Right", 0)
 carQueues = CarQueues()
 carQueues.addCarQueue(QJos, "Down")  #adaugam coada Qjos la lista cozilor de jos din carQueues
 carQueues.addCarQueue(QSus, "Up")
@@ -144,6 +144,7 @@ def handleClick(k, pos):
             caraux = Car("masina-removebg-preview.png", coordRIGHT, "left", nrCars_dr)
             carList.append(caraux)
             carListAux.append(caraux)
+            QStg.addCar(caraux)
     elif isInside(pos,25, height / 2 + road_width-25, 50,50): #butonul din stg
         if(k-k_buton_stg)>DELAY:
             k_buton_stg=k
@@ -151,6 +152,7 @@ def handleClick(k, pos):
             caraux = Car("masina-removebg-preview.png", coordLEFT, "right", nrCars_stg)
             carList.append(caraux)
             carListAux.append(caraux)
+            QDr.addCar(caraux)
     elif isInside(pos,width/2 + road_width-25, height - 75, 50, 50): #butonul de jos
         if(k-k_buton_sus)>DELAY:
             k_buton_sus=k
@@ -158,6 +160,7 @@ def handleClick(k, pos):
             caraux = Car("masina-removebg-preview.png", coordDOWN, "up", nrCars_jos)
             carList.append(caraux)
             carListAux.append(caraux)
+            QSus.addCar(caraux)
     elif isInside(pos,width/2- road_width-25, 25,50,50): #butonul de sus
         if(k-k_buton_jos)>DELAY:
             k_buton_jos=k
@@ -165,6 +168,7 @@ def handleClick(k, pos):
             caraux = Car("masina-removebg-preview.png", coordUP, "down", nrCars_sus)
             carList.append(caraux)
             carListAux.append(caraux)
+            QJos.addCar(caraux)
 
 #scoatem masina daca a trecut de mijloc plus 50 px crd
 def passed(c):
@@ -177,34 +181,67 @@ def passed(c):
 #decat inceputul cozii mari de inceputul intersectiei@@@@@@@@@@@@@!! (important)
 ##################ALGORITM
 def controlSemafoare():
-    nr_up_down = 0
-    nr_left_right=0
-    for c in carList:
-        if c.direction == "up" or c.direction =="down":
-            nr_up_down += 1
-        else:
-            nr_left_right += 1
-    if nr_up_down > nr_left_right:
+    global carQueues
+    global QJos, QSus, QStg, QDr
+    carQueues.updatePriorities()
+    aux = carQueues.getMaxPriorityDirection()
+    #print (aux + " is the max priority direction")
+    if aux in ["Down", "Up"]:
         sem_sus.setColor("green")
         sem_jos.setColor("green")
         sem_dr.setColor("red")
         sem_stg.setColor("red")
-    else:
-        sem_dr.setColor("green")
-        sem_stg.setColor("green")
+    elif aux in ["Left", "Right"]:
         sem_sus.setColor("red")
         sem_jos.setColor("red")
+        sem_dr.setColor("green")
+        sem_stg.setColor("green")
+
+
+    # nr_up_down = 0
+    # nr_left_right=0
+    # for c in carList:
+    #     if c.direction == "up" or c.direction =="down":
+    #         nr_up_down += 1
+    #     else:
+    #         nr_left_right += 1
+    # if nr_up_down > nr_left_right:
+    #     sem_sus.setColor("green")
+    #     sem_jos.setColor("green")
+    #     sem_dr.setColor("red")
+    #     sem_stg.setColor("red")
+    # else:
+    #     sem_dr.setColor("green")
+    #     sem_stg.setColor("green")
+    #     sem_sus.setColor("red")
+    #     sem_jos.setColor("red")
+
+
 
 
 def manageCar(c):  #if c has passed manage it
     global nrCars_jos, nrCars_sus, nrCars_stg, nrCars_dr
     if c.direction == "up":
           nrCars_jos -= 1
+          for carq in carQueues.QUp: #parcurgem cozile cu directia up din carQueues si scoatem c din lista in care este
+              if c in carq.carlist:
+                  carq.removeCar(c)
+
     elif c.direction == "down":
           nrCars_sus -= 1
+          for carq in carQueues.QDown:
+              if c in carq.carlist:
+                  carq.removeCar(c)
+
     elif c.direction == "left":
           nrCars_dr -= 1
+          for carq in carQueues.QLeft:
+              if c in carq.carlist:
+                  carq.removeCar(c)
     else:
+          for carq in carQueues.QRight:
+                if c in carq.carlist:
+                    carq.removeCar(c)
           nrCars_stg -= 1
     carList.remove(c)
 
@@ -215,6 +252,15 @@ while running:
     controlSemafoare()
     if(k%1000==0):
         print("nrCars_jos: ", nrCars_jos, "nrCars_sus: ", nrCars_sus, "nrCars_stg: ", nrCars_stg, "nrCars_dr: ", nrCars_dr)
+        for c in carQueues.QUp:
+            print("sus: ", c.amount)
+        for c in carQueues.QDown:
+            print("jos: ", c.amount)
+        for c in carQueues.QLeft:
+            print("stg: ", c.amount)
+        for c in carQueues.QRight:
+            print("dr: ", c.amount)
+
 
     k+=1
     if k%7==0:
