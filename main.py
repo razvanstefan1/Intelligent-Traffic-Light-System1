@@ -174,6 +174,24 @@ def handleClick(k, pos):
 def passed(c):
     return c.hasPassed()
 
+def middleClear(): #true daca nu sunt masini in mijlocul intersectiei
+    global carList
+    #!!!!!!!!!!!!!!car_loc returneaza mereu coord punctului din stanga sus oricum ar fi orientata masina (adica coltul cel mai aproape de coltul stg sus al ecranului)
+    for c in carList:
+        if c.direction == "down":
+            x = c.car_loc[0]
+            y = c.car_loc[1] + 38   # 38 e lungimea masinii
+        if c.direction == "right":
+            x = c.car_loc[0] + 38
+            y = c.car_loc[1]
+        else:
+            x = c.car_loc[0]
+            y = c.car_loc[1]
+
+        if 759 <= x <= 840 and 359 <= y <=440:
+            return False
+    return True
+
 # pt fiecare directie de mers verificam sa fie inainte de inceputul intersectiei pt a adauga acea masina in coada acelei directii si comparam lungimea cozilor si
 # punem verde la cea mai lunga coada si rosu la cealalta
 #actually cred ca ar trb sa luam in calcul si partea opusa de drum pt ca verde e pt ambele parti
@@ -186,7 +204,7 @@ def controlSemafoare():
     carQueues.updatePriorities()
     aux = carQueues.getMaxPriorityDirection()
     #print (aux + " is the max priority direction")
-    if aux in ["Down", "Up"]:
+    if aux in ["Down", "Up"] and middleClear() :
         sem_sus.setColor("green")
         sem_jos.setColor("green")
         sem_dr.setColor("red")
@@ -225,7 +243,8 @@ def manageCar(c):  #if c has passed manage it
           nrCars_jos -= 1
           for carq in carQueues.QUp: #parcurgem cozile cu directia up din carQueues si scoatem c din lista in care este
               if c in carq.carlist:
-                  carq.removeCar(c)
+                  carq.removeCar(c) #dar amount ul cozii se goleste doar cand trece ultima masina din coada
+                                    #astfel se evita acele ciocniri si alternari rapide rosu verde
 
     elif c.direction == "down":
           nrCars_sus -= 1
@@ -252,25 +271,26 @@ while running:
     controlSemafoare()
     if(k%1000==0):
         print("nrCars_jos: ", nrCars_jos, "nrCars_sus: ", nrCars_sus, "nrCars_stg: ", nrCars_stg, "nrCars_dr: ", nrCars_dr)
-        for c in carQueues.QUp:
-            print("sus: ", c.amount)
-        for c in carQueues.QDown:
-            print("jos: ", c.amount)
-        for c in carQueues.QLeft:
-            print("stg: ", c.amount)
-        for c in carQueues.QRight:
-            print("dr: ", c.amount)
+        # for c in carQueues.QUp:
+        #     print("sus: ", c.amount)
+        # for c in carQueues.QDown:
+        #     print("jos: ", c.amount)
+        # for c in carQueues.QLeft:
+        #     print("stg: ", c.amount)
+        # for c in carQueues.QRight:
+        #     print("dr: ", c.amount)
 
 
     k+=1
     if k%7==0:
+        #print (middleClear())
 
         for c in carListAux:
             c.move(c.direction, sem_dr.getColor(), sem_stg.getColor(), sem_sus.getColor(), sem_jos.getColor(),
                    nrCars_dr, nrCars_stg, nrCars_sus, nrCars_jos, passed(c))
         for c in carList:  # acest loop e necesar pt ca dupa ce dau remove din carList, in carlistaux tot ramane masina deci da crash cand dau remove
             if(passed(c)):
-                print("car with index ", c.index, " has passed")
+                #print("car with index ", c.index, " has passed")
                 manageCar(c)
 
 
@@ -280,6 +300,15 @@ while running:
         if event.type == pygame.MOUSEBUTTONDOWN:
             leftClick = pygame.mouse.get_pressed(num_buttons=3)[0]
             handleClick(k, pygame.mouse.get_pos())
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_UP:
+                handleClick(k, (720,50))  # !!!!!!!!!!!!!! DACA APAS TASTA SUS O TRATEZ CA PE UN CLICK PE BUTONUL DE SUS (TUPLA DATA CA PARAMETRU E IN INTERIORUL BUTONULUI)
+            if event.key == pygame.K_DOWN:
+                handleClick(k, (878,740))
+            if event.key == pygame.K_LEFT:
+                handleClick(k, (52,488))
+            if event.key == pygame.K_RIGHT:
+                handleClick(k, (1556,320))
 
     #draw road
     pygame.draw.rect(screen, (50, 50, 50), (int(width / 2 - road_width / 2), 0, road_width, height))
