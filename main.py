@@ -2,6 +2,7 @@ import pygame
 from pygame.locals import *
 from car import Car
 from semafoare import Semafor
+from carqueue import CarQueue, CarQueues
 from time import sleep
 from threading import Timer
 
@@ -65,12 +66,6 @@ coordUP =(width/2 - 15, 50)
 coordLEFT =(50, height/2 + 48)
 coordRIGHT =(width-50, height/2 + 5)
 
-# car1 = Car("masina-removebg-preview.png", coordDOWN, "up")
-# car2 = Car("masina-removebg-preview.png", coordUP, "down")
-# car3 = Car("masina-removebg-preview.png", coordLEFT, "right")
-# car4 = Car("masina-removebg-preview.png", coordRIGHT, "left")
-
-
 def draw_buttons():
     buton1 = pygame.image.load("buton1.png")
     buton_loc = buton1.get_rect()
@@ -122,6 +117,21 @@ nrCars_jos=0  #nr cars e nr de masini si index ul (dar indexam de la 1) nrcarsjo
 nrCars_sus=0
 nrCars_stg=0
 nrCars_dr=0
+
+
+###############################CAR QUEUE
+QJos = CarQueue(0,"Down", 0, None)
+QSus = CarQueue(0,"Up", 0, None)
+QStg = CarQueue(0,"Left", 0, None)
+QDr = CarQueue(0,"Right", 0, None)
+carQueues = CarQueues()
+carQueues.addCarQueue(QJos, "Down")  #adaugam coada Qjos la lista cozilor de jos din carQueues
+carQueues.addCarQueue(QSus, "Up")
+carQueues.addCarQueue(QStg, "Left")
+carQueues.addCarQueue(QDr, "Right")
+###############################CAR QUEUE
+
+
 #draw cars at click
 def handleClick(k, pos):
     global k_buton_sus, k_buton_jos, k_buton_stg, k_buton_dr # sa modific var globala, nu locala
@@ -200,26 +210,18 @@ def manageCar(c):  #if c has passed manage it
 
 
 
-
-
 k=0
 while running:
-    #animatie vehicul
     controlSemafoare()
     if(k%1000==0):
         print("nrCars_jos: ", nrCars_jos, "nrCars_sus: ", nrCars_sus, "nrCars_stg: ", nrCars_stg, "nrCars_dr: ", nrCars_dr)
 
     k+=1
-    if k%8==0:
+    if k%7==0:
 
         for c in carListAux:
             c.move(c.direction, sem_dr.getColor(), sem_stg.getColor(), sem_sus.getColor(), sem_jos.getColor(),
                    nrCars_dr, nrCars_stg, nrCars_sus, nrCars_jos, passed(c))
-            #daca a trecut de mijloc + latura patratului din mijloc, scoatem din lista
-            # if(passed(c)):
-            #     print("car with index ", c.index, " has passed")
-            #     #carList.remove(c)
-            #     manageCar(c)
         for c in carList:  # acest loop e necesar pt ca dupa ce dau remove din carList, in carlistaux tot ramane masina deci da crash cand dau remove
             if(passed(c)):
                 print("car with index ", c.index, " has passed")
