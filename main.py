@@ -3,48 +3,7 @@ from pygame.locals import *
 from car import Car
 from semafoare import Semafor
 from carqueue import CarQueue, CarQueues
-from time import sleep
-from threading import Timer
 
-
-#timer:
-# timp =0
-# def incr_time():
-#     global timp
-#     timp+=1
-#     print(timp)
-
-#primul argument zice din cate in cate secunde sa se apeleze incr_timer
-# timer = RepeatedTimer(0.5,incr_time) # it auto-starts, no need of rt.start()
-########
-############################
-# class RepeatedTimer(object):
-#     def __init__(self, interval, function, *args, **kwargs):
-#         self._timer     = None
-#         self.interval   = interval
-#         self.function   = function
-#         self.args       = args
-#         self.kwargs     = kwargs
-#         self.is_running = False
-#         self.start()
-#
-#     def _run(self):
-#         self.is_running = False
-#         self.start()
-#         self.function(*self.args, **self.kwargs)
-#
-#     def start(self):
-#         if not self.is_running:
-#             self._timer = Timer(self.interval, self._run)
-#             self._timer.start()
-#             self.is_running = True
-#
-#     def stop(self):
-#         self._timer.cancel()
-#         self.is_running = False
-
-#https://stackoverflow.com/questions/474528/what-is-the-best-way-to-repeatedly-execute-a-function-every-x-seconds
-##########################
 
 size = width, height = (1600,800) #screen size
 road_width = width/20 #width of the road
@@ -129,6 +88,12 @@ carQueues.addCarQueue(QJos, "Down")  #adaugam coada Qjos la lista cozilor de jos
 carQueues.addCarQueue(QSus, "Up")
 carQueues.addCarQueue(QStg, "Left")
 carQueues.addCarQueue(QDr, "Right")
+
+#aici pun masinile care nu au fost adaugate la queue inca
+QJosLateArrivals = CarQueue(0,"Down", 0)
+QSusLateArrivals = CarQueue(0,"Up", 0)
+QStgLateArrivals = CarQueue(0,"Left", 0)
+QDrLateArrivals = CarQueue(0,"Right", 0)
 ###############################CAR QUEUE
 
 
@@ -144,7 +109,8 @@ def handleClick(k, pos):
             caraux = Car("masina-removebg-preview.png", coordRIGHT, "left", nrCars_dr)
             carList.append(caraux)
             carListAux.append(caraux)
-            QStg.addCar(caraux)
+            if not QStg.addCar(caraux):
+                QStgLateArrivals.carlist.append(caraux)
     elif isInside(pos,25, height / 2 + road_width-25, 50,50): #butonul din stg
         if(k-k_buton_stg)>DELAY:
             k_buton_stg=k
@@ -152,7 +118,8 @@ def handleClick(k, pos):
             caraux = Car("masina-removebg-preview.png", coordLEFT, "right", nrCars_stg)
             carList.append(caraux)
             carListAux.append(caraux)
-            QDr.addCar(caraux)
+            if not QDr.addCar(caraux):
+                QDrLateArrivals.carlist.append(caraux) #nu folosim carList ca sa nu se tot apeleze aia
     elif isInside(pos,width/2 + road_width-25, height - 75, 50, 50): #butonul de jos
         if(k-k_buton_sus)>DELAY:
             k_buton_sus=k
@@ -160,7 +127,8 @@ def handleClick(k, pos):
             caraux = Car("masina-removebg-preview.png", coordDOWN, "up", nrCars_jos)
             carList.append(caraux)
             carListAux.append(caraux)
-            QSus.addCar(caraux)
+            if not QSus.addCar(caraux):
+                QSusLateArrivals.carlist.append(caraux)
     elif isInside(pos,width/2- road_width-25, 25,50,50): #butonul de sus
         if(k-k_buton_jos)>DELAY:
             k_buton_jos=k
@@ -168,11 +136,24 @@ def handleClick(k, pos):
             caraux = Car("masina-removebg-preview.png", coordUP, "down", nrCars_sus)
             carList.append(caraux)
             carListAux.append(caraux)
-            QJos.addCar(caraux)
+            if not QJos.addCar(caraux):
+                QJosLateArrivals.carlist.append(caraux)
 
 #scoatem masina daca a trecut de mijloc plus 50 px crd
 def passed(c):
     return c.hasPassed()
+
+def manageLateArrivals():
+    global QJosLateArrivals, QSusLateArrivals, QStgLateArrivals, QDrLateArrivals
+    if len(QJosLateArrivals.carlist) > 0:
+        if QJos.addCar(QJosLateArrivals.carlist[0]):
+            QJosLateArrivals.carlist.pop(0)
+    if len(QSusLateArrivals.carlist) > 0:
+        if QSus.addCar(QSusLateArrivals.carlist[0]):
+            QSusLateArrivals.carlist.pop(0)
+    if len(QStgLateArrivals.carlist) > 0:
+        if QStg.addCar(QStgLateArrivals.carlist[0]):
+            QStgLateArrivals.carlist.pop(0)
 
 def middleClear(): #true daca nu sunt masini in mijlocul intersectiei
     global carList
@@ -202,6 +183,8 @@ def controlSemafoare(k):
     global carQueues
     global QJos, QSus, QStg, QDr
     carQueues.updatePriorities(k)
+
+    manageLateArrivals()
 
     aux = carQueues.getMaxPriorityDirection()
     #print (aux + " is the max priority direction")
@@ -270,7 +253,9 @@ def manageCar(c):  #if c has passed manage it
 k=0
 while running:
     controlSemafoare(k)
-    #if(k%1000==0):
+   # if(k%1000==0):
+      # if len(carListAux)> 0:
+      #   print ("aaa", carListAux[0].car_loc.center)
         #print("nrCars_jos: ", nrCars_jos, "nrCars_sus: ", nrCars_sus, "nrCars_stg: ", nrCars_stg, "nrCars_dr: ", nrCars_dr)
         # for c in carQueues.QUp:
         #     print("sus: ", c.amount)

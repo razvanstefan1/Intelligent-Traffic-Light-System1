@@ -8,19 +8,31 @@ class CarQueue:
         self.lastCar = None
         self.firstCar = None
         self.dist_head_inceput = 0 # distanta dintre inceputul primei masini la inceputul intersectiei
-        self.dist_tail_sfarsit=0 # distanta dintre sf ultimei masini la sfarsitul intersectiei
-    def addCar(self, car):
-        self.carlist.append(car)
-        self.amount += 1
-        if self.amount == 1:
+        self.dist_tail_sfarsit=0 # distanta dintre sf ultimei masini la sfarsitul intersectiei4
+        self.latecarlist = [] #masinile ce intra mai tarziu in queue
+    def addCar(self, car): #returneaza true daca am adaugat masina in coada
+        distUpDown = 0
+        distLR = 0
+        if car.direction in ["up", "down"] and self.lastCar != None:
+            distUpDown = abs(car.car_loc[1] - self.lastCar.car_loc[1])
+        elif car.direction in ["right", "left"] and self.lastCar != None:
+            distLR = abs(car.car_loc[0] - self.lastCar.car_loc[0])
+
+        if distUpDown !=0 and distUpDown <= 180 or distLR!=0 and distLR <= 380 or self.amount==0:
+         self.carlist.append(car)
+         self.amount += 1
+         if self.amount == 1:
             self.firstCar = car
-        self.lastCar = car #ultima masina din coada
+         self.lastCar = car #ultima masina din coada
+         print ("True")
+         return True
+        return False
+
     def removeCar(self, car):
         if(car == self.lastCar):
             self.amount = 0  #daca a trecut ultima masina atunci golim coada
         self.carlist.remove(car)
         #self.amount -= 1
-
 
 class CarQueues:
     def __init__(self):
@@ -135,13 +147,6 @@ class CarQueues:
                 if(k%400==0):
                  print (8)
 
-
-
-
-
-        # for queues in self.allQueues:
-        #     for carlist in queues:
-        #         carlist.priority = carlist.amount #provizoriu
 
     def calculateDistances(self):
         for c in self.QUp:
