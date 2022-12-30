@@ -198,10 +198,11 @@ def middleClear(): #true daca nu sunt masini in mijlocul intersectiei
 #daca este o coada mai mica, care ar trece prin intersectie inainte ca marea coada sa ajunga la intersectie, ii afisam acesteia verde (finalul cozii mici sa mai aproape de trecerea intersectiei
 #decat inceputul cozii mari de inceputul intersectiei@@@@@@@@@@@@@!! (important)
 ##################ALGORITM
-def controlSemafoare():
+def controlSemafoare(k):
     global carQueues
     global QJos, QSus, QStg, QDr
-    carQueues.updatePriorities()
+    carQueues.updatePriorities(k)
+
     aux = carQueues.getMaxPriorityDirection()
     #print (aux + " is the max priority direction")
     if aux in ["Down", "Up"] and middleClear() :
@@ -268,9 +269,9 @@ def manageCar(c):  #if c has passed manage it
 
 k=0
 while running:
-    controlSemafoare()
-    if(k%1000==0):
-        print("nrCars_jos: ", nrCars_jos, "nrCars_sus: ", nrCars_sus, "nrCars_stg: ", nrCars_stg, "nrCars_dr: ", nrCars_dr)
+    controlSemafoare(k)
+    #if(k%1000==0):
+        #print("nrCars_jos: ", nrCars_jos, "nrCars_sus: ", nrCars_sus, "nrCars_stg: ", nrCars_stg, "nrCars_dr: ", nrCars_dr)
         # for c in carQueues.QUp:
         #     print("sus: ", c.amount)
         # for c in carQueues.QDown:
