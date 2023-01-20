@@ -9,8 +9,6 @@ class Semafor:
         self.setDirection()
         self.color = None
 
-
-
     def setColor(self,clr):
         if clr == "red":
             self.img = pygame.image.load("sem_ros.png")
@@ -33,9 +31,6 @@ class Semafor:
 
     def getColor(self):
         return self.color
-
-
-
 
 def getColorImage(color):  #obtine imaginea cu acea culoare
     if color == "red":

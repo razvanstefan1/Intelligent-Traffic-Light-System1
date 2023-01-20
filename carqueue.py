@@ -8,7 +8,7 @@ class CarQueue:
         self.lastCar = None
         self.firstCar = None
         self.dist_head_inceput = 0 # distanta dintre inceputul primei masini la inceputul intersectiei
-        self.dist_tail_sfarsit=0 # distanta dintre sf ultimei masini la sfarsitul intersectiei4
+        self.dist_tail_sfarsit=0 # distanta dintre sf ultimei masini la sfarsitul intersectiei
         self.latecarlist = [] #masinile ce intra mai tarziu in queue
     def addCar(self, car): #returneaza true daca am adaugat masina in coada
         distUpDown = 0
@@ -18,7 +18,7 @@ class CarQueue:
         elif car.direction in ["right", "left"] and self.lastCar != None:
             distLR = abs(car.car_loc[0] - self.lastCar.car_loc[0])
 
-        if distUpDown !=0 and distUpDown <= 180 or distLR!=0 and distLR <= 380 or self.amount==0:
+        if distUpDown !=0 and distUpDown <= 180 or distLR!=0 and distLR <= 300 or self.amount==0: #380
          self.carlist.append(car)
          self.amount += 1
          if self.amount == 1:
@@ -33,6 +33,8 @@ class CarQueue:
             self.amount = 0  #daca a trecut ultima masina atunci golim coada
         self.carlist.remove(car)
         #self.amount -= 1
+
+
 
 class CarQueues:
     def __init__(self):
@@ -60,6 +62,18 @@ class CarQueues:
                     aux = carlist.direction
         return aux
 
+    def selectPriority(self,b):
+        if b == "UD":
+            self.QUp[0].priority = 1000
+            self.QDown[0].priority = 999
+            self.QLeft[0].priority = 1
+            self.QRight[0].priority = 0
+        else:
+            self.QUp[0].priority = 1
+            self.QDown[0].priority = 0
+            self.QLeft[0].priority = 1000
+            self.QRight[0].priority = 999
+
     def updatePriorities(self,k):
         self.calculateDistances()
         nrsusjos=0
@@ -85,67 +99,26 @@ class CarQueues:
             distdrst_inceput += c.dist_head_inceput
             distdrst_sfarsit += c.dist_tail_sfarsit
 
-
         if(nrsusjos==0):
-            self.QLeft[0].priority = 1000
-            self.QRight[0].priority = 999
-            self.QDown[0].priority = 1
-            self.QUp[0].priority = 0
-            if(k%400==0):
-             print (1)
-
+            self.selectPriority("LR")
         elif(nrdrst==0):
-            self.QUp[0].priority = 1000
-            self.QDown[0].priority = 999
-            self.QLeft[0].priority = 1
-            self.QRight[0].priority = 0
-            if (k % 400 == 0):
-             print (2)
+            self.selectPriority("UD")
         elif(nrsusjos == nrdrst):
             if(distdrst_inceput <= distsusjos_inceput):
-                self.QLeft[0].priority = 1000
-                self.QRight[0].priority = 999
-                self.QDown[0].priority = 1
-                self.QUp[0].priority = 0
-                if(k%400==0):
-                 print (distdrst_inceput, distsusjos_inceput, 3)
+                self.selectPriority("LR")
             else:
-                self.QLeft[0].priority = 0
-                self.QRight[0].priority = 1
-                self.QDown[0].priority = 1000
-                self.QUp[0].priority = 999
-                if(k%400==0):
-                 print (distdrst_inceput, distsusjos_inceput, 4)
+                self.selectPriority("UD")
         elif(nrsusjos > nrdrst):
             if(distsusjos_inceput <= distdrst_sfarsit):
-                self.QLeft[0].priority = 0
-                self.QRight[0].priority = 1
-                self.QDown[0].priority = 1000
-                self.QUp[0].priority = 999
-                if(k%400==0):
-                 print (5)
+                self.selectPriority("UD")
             else:
-                self.QLeft[0].priority = 1000
-                self.QRight[0].priority = 999
-                self.QDown[0].priority = 1
-                self.QUp[0].priority = 0
-                if(k%400==0):
-                 print (6)
+                self.selectPriority("LR")
         elif(nrsusjos<=nrdrst):
             if(distdrst_inceput <= distsusjos_sfarsit):
-                self.QLeft[0].priority = 1000
-                self.QRight[0].priority = 999
-                self.QDown[0].priority = 1
-                self.QUp[0].priority = 0
-                if(k%400==0):
-                 print (7)
+                self.selectPriority("LR")
             else:
-                self.QLeft[0].priority = 0
-                self.QRight[0].priority = 1
-                self.QDown[0].priority = 1000
-                self.QUp[0].priority = 999
-                if(k%400==0):
-                 print (8)
+                self.selectPriority("UD")
+
 
 
     def calculateDistances(self):

@@ -173,12 +173,7 @@ def middleClear(): #true daca nu sunt masini in mijlocul intersectiei
             return False
     return True
 
-# pt fiecare directie de mers verificam sa fie inainte de inceputul intersectiei pt a adauga acea masina in coada acelei directii si comparam lungimea cozilor si
-# punem verde la cea mai lunga coada si rosu la cealalta
-#actually cred ca ar trb sa luam in calcul si partea opusa de drum pt ca verde e pt ambele parti
-#daca este o coada mai mica, care ar trece prin intersectie inainte ca marea coada sa ajunga la intersectie, ii afisam acesteia verde (finalul cozii mici sa mai aproape de trecerea intersectiei
-#decat inceputul cozii mari de inceputul intersectiei@@@@@@@@@@@@@!! (important)
-##################ALGORITM
+
 def controlSemafoare(k):
     global carQueues
     global QJos, QSus, QStg, QDr
@@ -198,27 +193,6 @@ def controlSemafoare(k):
         sem_jos.setColor("red")
         sem_dr.setColor("green")
         sem_stg.setColor("green")
-
-
-    # nr_up_down = 0
-    # nr_left_right=0
-    # for c in carList:
-    #     if c.direction == "up" or c.direction =="down":
-    #         nr_up_down += 1
-    #     else:
-    #         nr_left_right += 1
-    # if nr_up_down > nr_left_right:
-    #     sem_sus.setColor("green")
-    #     sem_jos.setColor("green")
-    #     sem_dr.setColor("red")
-    #     sem_stg.setColor("red")
-    # else:
-    #     sem_dr.setColor("green")
-    #     sem_stg.setColor("green")
-    #     sem_sus.setColor("red")
-    #     sem_jos.setColor("red")
-
-
 
 
 def manageCar(c):  #if c has passed manage it
@@ -253,30 +227,13 @@ def manageCar(c):  #if c has passed manage it
 k=0
 while running:
     controlSemafoare(k)
-   # if(k%1000==0):
-      # if len(carListAux)> 0:
-      #   print ("aaa", carListAux[0].car_loc.center)
-        #print("nrCars_jos: ", nrCars_jos, "nrCars_sus: ", nrCars_sus, "nrCars_stg: ", nrCars_stg, "nrCars_dr: ", nrCars_dr)
-        # for c in carQueues.QUp:
-        #     print("sus: ", c.amount)
-        # for c in carQueues.QDown:
-        #     print("jos: ", c.amount)
-        # for c in carQueues.QLeft:
-        #     print("stg: ", c.amount)
-        # for c in carQueues.QRight:
-        #     print("dr: ", c.amount)
-
-
     k+=1
     if k%7==0:
-        #print (middleClear())
-
         for c in carListAux:
             c.move(c.direction, sem_dr.getColor(), sem_stg.getColor(), sem_sus.getColor(), sem_jos.getColor(),
                    nrCars_dr, nrCars_stg, nrCars_sus, nrCars_jos, passed(c))
         for c in carList:  # acest loop e necesar pt ca dupa ce dau remove din carList, in carlistaux tot ramane masina deci da crash cand dau remove
             if(passed(c)):
-                #print("car with index ", c.index, " has passed")
                 manageCar(c)
 
 
